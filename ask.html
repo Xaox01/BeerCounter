@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>🍺 Ile piw dzisiaj?</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="ask-page">
+  <div class="container">
+    <h1>🍺 Siema!</h1>
+    <p class="date-display" id="dateDisplay"></p>
+    <p class="question">Ile piw wczoraj wypiłeś?</p>
+    
+    <div class="beer-input">
+      <button class="btn-adjust" id="decrease">−</button>
+      <input type="number" id="beerCount" value="0" min="0" max="99">
+      <button class="btn-adjust" id="increase">+</button>
+    </div>
+    
+    <div class="quick-buttons">
+      <button class="quick-btn" data-count="0">0 🚗</button>
+      <button class="quick-btn" data-count="1">1 🍺</button>
+      <button class="quick-btn" data-count="2">2 🍺</button>
+      <button class="quick-btn" data-count="3">3 🍺</button>
+      <button class="quick-btn" data-count="5">5 🍻</button>
+      <button class="quick-btn" data-count="10">10 🥴</button>
+    </div>
+    
+    <button id="submit" class="submit-btn">Zapisz i zamknij</button>
+    
+    <div class="yesterday-stats" id="yesterdayStats"></div>
+    
+    <button id="skipBtn" class="skip-btn">Pomiń (nie piłem)</button>
+  </div>
+  
+  <script src="ask.js"></script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Licznik Piw</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="popup-page">
+  <div class="container">
+    <h1>🍺 Licznik Piw</h1>
+    
+    <!-- Nawigacja między widokami -->
+    <div class="tabs">
+      <button class="tab active" data-tab="stats">Statystyki</button>
+      <button class="tab" data-tab="calendar">Kalendarz</button>
+      <button class="tab" data-tab="add">Dodaj</button>
+    </div>
+    
+    <!-- STATYSTYKI -->
+    <div class="tab-content active" id="stats">
+      <div class="stats-card">
+        <h2>Dzisiaj</h2>
+        <p class="big-number" id="todayCount">0</p>
+        <p class="label">piw</p>
+      </div>
+      
+      <div class="stats-grid">
+        <div class="stat-box">
+          <p class="stat-number" id="yesterdayCount">0</p>
+          <p class="stat-label">Wczoraj</p>
+        </div>
+        <div class="stat-box">
+          <p class="stat-number" id="weekCount">0</p>
+          <p class="stat-label">Ten tydzień</p>
+        </div>
+        <div class="stat-box">
+          <p class="stat-number" id="monthCount">0</p>
+          <p class="stat-label">Ten miesiąc</p>
+        </div>
+        <div class="stat-box">
+          <p class="stat-number" id="yearCount">0</p>
+          <p class="stat-label">Ten rok</p>
+        </div>
+        <div class="stat-box">
+          <p class="stat-number" id="avgWeek">0</p>
+          <p class="stat-label">Śr. dzienna (7dni)</p>
+        </div>
+        <div class="stat-box">
+          <p class="stat-number" id="totalCount">0</p>
+          <p class="stat-label">Łącznie</p>
+        </div>
+      </div>
+      
+      <div class="streak-info" id="streakInfo"></div>
+    </div>
+    
+    <!-- KALENDARZ -->
+    <div class="tab-content" id="calendar">
+      <div class="calendar-nav">
+        <button id="prevMonth">◀</button>
+        <span id="monthLabel">Styczeń 2024</span>
+        <button id="nextMonth">▶</button>
+      </div>
+      
+      <div class="calendar-grid">
+        <div class="day-header">Pn</div>
+        <div class="day-header">Wt</div>
+        <div class="day-header">Śr</div>
+        <div class="day-header">Cz</div>
+        <div class="day-header">Pt</div>
+        <div class="day-header">So</div>
+        <div class="day-header">Nd</div>
+      </div>
+      <div class="calendar-days" id="calendarDays"></div>
+      
+      <div class="calendar-legend">
+        <span><i class="legend-dot level-0"></i> 0</span>
+        <span><i class="legend-dot level-1"></i> 1-2</span>
+        <span><i class="legend-dot level-2"></i> 3-4</span>
+        <span><i class="legend-dot level-3"></i> 5-6</span>
+        <span><i class="legend-dot level-4"></i> 7+</span>
+      </div>
+      
+      <div class="month-summary" id="monthSummary"></div>
+    </div>
+    
+    <!-- DODAJ -->
+    <div class="tab-content" id="add">
+      <h3>Dodaj piwo na dziś</h3>
+      <div class="add-buttons">
+        <button class="add-btn" data-count="1">+1 🍺</button>
+        <button class="add-btn" data-count="2">+2 🍺</button>
+        <button class="add-btn" data-count="3">+3 🍺</button>
+        <button class="add-btn" data-count="5">+5 🍻</button>
+      </div>
+      
+      <div class="manual-add">
+        <h3>Lub wpisz ręcznie dla daty:</h3>
+        <input type="date" id="manualDate">
+        <input type="number" id="manualCount" min="0" max="99" placeholder="Ilość">
+        <button id="manualSave" class="save-btn">Zapisz</button>
+      </div>
+      
+      <div class="actions">
+        <button id="exportCSV" class="action-btn">📊 Eksport CSV</button>
+        <button id="resetToday" class="action-btn danger">🗑️ Resetuj dziś</button>
+      </div>
+    </div>
+    
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
