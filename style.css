@@ -16,14 +16,14 @@ body {
 
 h1 {
   text-align: center;
-  margin-bottom: 15px;
-  font-size: 22px;
+  margin-bottom: 12px;
+  font-size: 20px;
 }
 
 h3 {
-  font-size: 14px;
+  font-size: 13px;
   color: #aaa;
-  margin: 15px 0 10px;
+  margin: 12px 0 8px;
 }
 
 /* ===== STRONA PYTANIA ===== */
@@ -139,26 +139,27 @@ h3 {
 
 /* ===== POPUP ===== */
 .popup-page {
-  width: 380px;
-  min-height: 500px;
+  width: 400px;
+  max-height: 600px;
+  overflow-y: auto;
 }
 
 /* Taby */
 .tabs {
   display: flex;
-  gap: 5px;
-  margin-bottom: 15px;
+  gap: 4px;
+  margin-bottom: 12px;
 }
 
 .tab {
   flex: 1;
-  padding: 10px;
+  padding: 8px 4px;
   border: none;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.1);
   color: #888;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 11px;
   transition: all 0.2s;
 }
 
@@ -178,74 +179,192 @@ h3 {
 /* Statystyki */
 .stats-card {
   background: linear-gradient(135deg, #ffa500 0%, #ff6b00 100%);
-  border-radius: 15px;
-  padding: 20px;
+  border-radius: 12px;
+  padding: 15px;
   text-align: center;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 .stats-card h2 {
-  font-size: 12px;
+  font-size: 11px;
   opacity: 0.9;
 }
 
 .big-number {
-  font-size: 56px;
+  font-size: 48px;
   font-weight: bold;
 }
 
 .label {
-  font-size: 14px;
+  font-size: 12px;
   opacity: 0.9;
 }
 
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-bottom: 15px;
+  gap: 6px;
+  margin-bottom: 12px;
 }
 
 .stat-box {
   text-align: center;
-  padding: 12px 8px;
+  padding: 10px 6px;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
+  border-radius: 8px;
 }
 
 .stat-number {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: bold;
   color: #ffa500;
 }
 
 .stat-label {
+  font-size: 9px;
+  color: #888;
+  margin-top: 2px;
+}
+
+/* Koszty */
+.costs-section {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.costs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.cost-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.cost-icon {
+  font-size: 20px;
+}
+
+.cost-value {
+  font-size: 16px;
+  font-weight: bold;
+  color: #4ade80;
+}
+
+.cost-label {
+  font-size: 10px;
+  color: #888;
+}
+
+.fun-stats {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  font-size: 12px;
+  color: #aaa;
+}
+
+.fun-stats p {
+  margin: 5px 0;
+}
+
+.streak-info {
+  text-align: center;
+  padding: 8px;
+}
+
+.streak-good {
+  color: #4ade80;
+  font-size: 13px;
+}
+
+.streak-bad {
+  color: #f87171;
+  font-size: 13px;
+}
+
+.quick-add {
+  margin-top: 10px;
+}
+
+.add-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.add-btn {
+  flex: 1;
+  padding: 12px 8px;
+  font-size: 14px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 165, 0, 0.2);
+  color: #ffa500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.add-btn:hover {
+  background: rgba(255, 165, 0, 0.4);
+}
+
+/* ===== WYKRESY ===== */
+.chart-container {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.chart-container h3 {
+  margin: 0 0 10px 0;
+  font-size: 12px;
+}
+
+.chart-container canvas {
+  height: 150px !important;
+}
+
+.chart-stats {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.chart-stat {
+  flex: 1;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px 8px;
+  border-radius: 8px;
+}
+
+.chart-stat-value {
+  font-size: 22px;
+  font-weight: bold;
+  color: #ffa500;
+}
+
+.chart-stat-label {
   font-size: 10px;
   color: #888;
   margin-top: 3px;
 }
 
-.streak-info {
-  text-align: center;
-  padding: 10px;
-}
-
-.streak-good {
-  color: #4ade80;
-  font-size: 14px;
-}
-
-.streak-bad {
-  color: #f87171;
-  font-size: 14px;
-}
-
-/* Kalendarz */
+/* ===== KALENDARZ ===== */
 .calendar-nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 .calendar-nav button {
@@ -262,28 +381,28 @@ h3 {
 }
 
 #monthLabel {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: bold;
 }
 
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 3px;
-  margin-bottom: 5px;
+  gap: 2px;
+  margin-bottom: 4px;
 }
 
 .day-header {
   text-align: center;
-  font-size: 11px;
+  font-size: 10px;
   color: #888;
-  padding: 5px;
+  padding: 4px;
 }
 
 .calendar-days {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 3px;
+  gap: 2px;
 }
 
 .calendar-day {
@@ -292,14 +411,20 @@ h3 {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border-radius: 5px;
-  font-size: 11px;
-  position: relative;
-  cursor: default;
+  border-radius: 4px;
+  font-size: 10px;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.calendar-day:hover:not(.empty) {
+  transform: scale(1.1);
+  z-index: 1;
 }
 
 .calendar-day.empty {
   background: transparent;
+  cursor: default;
 }
 
 .calendar-day.level-0 { background: rgba(255, 255, 255, 0.05); }
@@ -314,28 +439,29 @@ h3 {
 
 .day-number {
   font-weight: bold;
+  font-size: 11px;
 }
 
 .day-count {
-  font-size: 9px;
+  font-size: 8px;
   opacity: 0.8;
 }
 
 .calendar-legend {
   display: flex;
   justify-content: center;
-  gap: 10px;
-  margin: 15px 0;
-  font-size: 11px;
+  gap: 8px;
+  margin: 10px 0;
+  font-size: 10px;
   color: #888;
 }
 
 .legend-dot {
   display: inline-block;
-  width: 12px;
-  height: 12px;
-  border-radius: 3px;
-  margin-right: 3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 2px;
   vertical-align: middle;
 }
 
@@ -347,82 +473,128 @@ h3 {
 
 .month-summary {
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
-  padding: 15px;
+  border-radius: 8px;
+  padding: 12px;
   text-align: center;
 }
 
 .month-summary p {
-  margin: 5px 0;
-  font-size: 13px;
+  margin: 4px 0;
+  font-size: 12px;
   color: #ccc;
 }
 
-/* Dodawanie */
-.add-buttons {
+.manual-add {
+  margin-top: 12px;
+}
+
+.manual-inputs {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
 }
 
-.add-btn {
+.manual-inputs input {
   flex: 1;
-  min-width: 70px;
-  padding: 15px 10px;
-  font-size: 16px;
-  border: none;
-  border-radius: 8px;
-  background: rgba(255, 165, 0, 0.2);
-  color: #ffa500;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.add-btn:hover {
-  background: rgba(255, 165, 0, 0.4);
-}
-
-.manual-add {
-  margin-top: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.manual-add input {
   padding: 10px;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   background: rgba(255, 255, 255, 0.1);
   color: white;
-  font-size: 14px;
+  font-size: 13px;
+}
+
+.manual-inputs input[type="number"] {
+  width: 60px;
+  flex: 0;
 }
 
 .save-btn {
-  padding: 12px;
+  padding: 10px 15px;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   background: #ffa500;
   color: white;
   font-size: 14px;
   cursor: pointer;
 }
 
-.actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
+/* ===== USTAWIENIA ===== */
+.settings-section {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
 }
 
-.action-btn {
-  flex: 1;
+.settings-section h3 {
+  margin: 0 0 12px 0;
+  color: #fff;
+}
+
+.setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.setting-row:last-child {
+  border-bottom: none;
+}
+
+.setting-row label {
+  font-size: 13px;
+  color: #ccc;
+}
+
+.setting-row input[type="number"] {
+  width: 80px;
+  padding: 8px;
+  border: none;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 14px;
+  text-align: center;
+}
+
+.setting-row input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.save-settings-btn {
+  width: 100%;
   padding: 12px;
   border: none;
   border-radius: 8px;
+  background: linear-gradient(135deg, #ffa500 0%, #ff6b00 100%);
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+
+.save-settings-btn:hover {
+  opacity: 0.9;
+}
+
+.danger-zone {
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.action-btn {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
   background: rgba(255, 255, 255, 0.1);
   color: #ccc;
   font-size: 13px;
   cursor: pointer;
+  margin-top: 8px;
 }
 
 .action-btn.danger {
@@ -449,6 +621,20 @@ h3 {
 .toast.show {
   transform: translateX(-50%) translateY(0);
   opacity: 1;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.2);
+  border-radius: 3px;
 }
 
 /* Input number bez strzałek */

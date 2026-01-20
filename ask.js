@@ -7,12 +7,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const dateDisplay = document.getElementById('dateDisplay');
   const quickButtons = document.querySelectorAll('.quick-btn');
   
-  // Pobierz wczorajszą datę
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = yesterday.toISOString().split('T')[0];
   
-  // Pokaż datę
   dateDisplay.textContent = yesterday.toLocaleDateString('pl-PL', { 
     weekday: 'long', 
     year: 'numeric', 
@@ -20,9 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
     day: 'numeric' 
   });
   
-  // Sprawdź czy wczoraj już było coś zapisane
   chrome.runtime.sendMessage({ action: "getBeerData" }, (history) => {
-    if (history[yesterdayStr] !== undefined) {
+    if (history && history[yesterdayStr] !== undefined) {
       beerCountInput.value = history[yesterdayStr];
       document.getElementById('yesterdayStats').innerHTML = 
         `<p>Wczoraj już zapisano: ${history[yesterdayStr]} 🍺</p>`;
@@ -31,9 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   decreaseBtn.addEventListener('click', () => {
     const current = parseInt(beerCountInput.value) || 0;
-    if (current > 0) {
-      beerCountInput.value = current - 1;
-    }
+    if (current > 0) beerCountInput.value = current - 1;
   });
   
   increaseBtn.addEventListener('click', () => {
@@ -50,13 +45,11 @@ document.addEventListener('DOMContentLoaded', () => {
   submitBtn.addEventListener('click', () => {
     const count = parseInt(beerCountInput.value) || 0;
     
-    // Zapisz dla wczorajszej daty
     chrome.runtime.sendMessage({ 
       action: "setBeersForDate", 
       date: yesterdayStr,
       count: count 
     }, () => {
-      // Oznacz że już pytano dzisiaj
       chrome.runtime.sendMessage({ action: "markAskedToday" }, () => {
         window.close();
       });
@@ -64,7 +57,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   
   skipBtn.addEventListener('click', () => {
-    // Zapisz 0 i zamknij
     chrome.runtime.sendMessage({ 
       action: "setBeersForDate", 
       date: yesterdayStr,

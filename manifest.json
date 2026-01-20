@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Licznik Piw 🍺",
-  "version": "2.0",
-  "description": "Zlicza ile piw wypiłeś - statystyki dzienne, miesięczne, roczne",
+  "version": "3.0",
+  "description": "Zlicza piwa z wykresami, kosztami i kaloriami",
   "permissions": [
     "storage"
   ],

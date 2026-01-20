@@ -4,19 +4,21 @@
   <meta charset="UTF-8">
   <title>Licznik Piw</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="popup-page">
   <div class="container">
     <h1>🍺 Licznik Piw</h1>
     
-    <!-- Nawigacja między widokami -->
+    <!-- Nawigacja -->
     <div class="tabs">
-      <button class="tab active" data-tab="stats">Statystyki</button>
-      <button class="tab" data-tab="calendar">Kalendarz</button>
-      <button class="tab" data-tab="add">Dodaj</button>
+      <button class="tab active" data-tab="stats">📊 Statystyki</button>
+      <button class="tab" data-tab="charts">📈 Wykresy</button>
+      <button class="tab" data-tab="calendar">📅 Kalendarz</button>
+      <button class="tab" data-tab="settings">⚙️ Ustawienia</button>
     </div>
     
-    <!-- STATYSTYKI -->
+    <!-- ===== STATYSTYKI ===== -->
     <div class="tab-content active" id="stats">
       <div class="stats-card">
         <h2>Dzisiaj</h2>
@@ -43,7 +45,7 @@
         </div>
         <div class="stat-box">
           <p class="stat-number" id="avgWeek">0</p>
-          <p class="stat-label">Śr. dzienna (7dni)</p>
+          <p class="stat-label">Śr./dzień (7d)</p>
         </div>
         <div class="stat-box">
           <p class="stat-number" id="totalCount">0</p>
@@ -51,10 +53,98 @@
         </div>
       </div>
       
+      <!-- KOSZTY I KALORIE -->
+      <div class="costs-section">
+        <h3>💰 Koszty i kalorie</h3>
+        <div class="costs-grid">
+          <div class="cost-box">
+            <span class="cost-icon">📅</span>
+            <div class="cost-info">
+              <p class="cost-value" id="weekCost">0 zł</p>
+              <p class="cost-label">Ten tydzień</p>
+            </div>
+          </div>
+          <div class="cost-box">
+            <span class="cost-icon">📆</span>
+            <div class="cost-info">
+              <p class="cost-value" id="monthCost">0 zł</p>
+              <p class="cost-label">Ten miesiąc</p>
+            </div>
+          </div>
+          <div class="cost-box">
+            <span class="cost-icon">📊</span>
+            <div class="cost-info">
+              <p class="cost-value" id="yearCost">0 zł</p>
+              <p class="cost-label">Ten rok</p>
+            </div>
+          </div>
+          <div class="cost-box">
+            <span class="cost-icon">🔥</span>
+            <div class="cost-info">
+              <p class="cost-value" id="monthCalories">0 kcal</p>
+              <p class="cost-label">Kalorie (miesiąc)</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="fun-stats">
+          <p id="funStat1"></p>
+          <p id="funStat2"></p>
+        </div>
+      </div>
+      
       <div class="streak-info" id="streakInfo"></div>
+      
+      <!-- Szybkie dodawanie -->
+      <div class="quick-add">
+        <h3>Dodaj piwo</h3>
+        <div class="add-buttons">
+          <button class="add-btn" data-count="1">+1 🍺</button>
+          <button class="add-btn" data-count="2">+2 🍺</button>
+          <button class="add-btn" data-count="3">+3 🍺</button>
+        </div>
+      </div>
     </div>
     
-    <!-- KALENDARZ -->
+    <!-- ===== WYKRESY ===== -->
+    <div class="tab-content" id="charts">
+      <div class="chart-container">
+        <h3>Ostatnie 7 dni</h3>
+        <canvas id="weekChart"></canvas>
+      </div>
+      
+      <div class="chart-container">
+        <h3>Ostatnie 30 dni</h3>
+        <canvas id="monthChart"></canvas>
+      </div>
+      
+      <div class="chart-container">
+        <h3>Dni tygodnia (średnia)</h3>
+        <canvas id="weekdayChart"></canvas>
+      </div>
+      
+      <div class="chart-container">
+        <h3>Koszty miesięczne</h3>
+        <canvas id="costChart"></canvas>
+      </div>
+      
+      <div class="chart-stats">
+        <div class="chart-stat">
+          <p class="chart-stat-value" id="maxDay">0</p>
+          <p class="chart-stat-label">Rekord dzienny</p>
+        </div>
+        <div class="chart-stat">
+          <p class="chart-stat-value" id="avgMonth">0</p>
+          <p class="chart-stat-label">Średnia (30 dni)</p>
+        </div>
+        <div class="chart-stat">
+          <p class="chart-stat-value" id="drinkingDays">0%</p>
+          <p class="chart-stat-label">Dni z piwem</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- ===== KALENDARZ ===== -->
     <div class="tab-content" id="calendar">
       <div class="calendar-nav">
         <button id="prevMonth">◀</button>
@@ -82,28 +172,58 @@
       </div>
       
       <div class="month-summary" id="monthSummary"></div>
+      
+      <!-- Ręczne dodawanie -->
+      <div class="manual-add">
+        <h3>Edytuj datę</h3>
+        <div class="manual-inputs">
+          <input type="date" id="manualDate">
+          <input type="number" id="manualCount" min="0" max="99" placeholder="Ilość">
+          <button id="manualSave" class="save-btn">💾</button>
+        </div>
+      </div>
     </div>
     
-    <!-- DODAJ -->
-    <div class="tab-content" id="add">
-      <h3>Dodaj piwo na dziś</h3>
-      <div class="add-buttons">
-        <button class="add-btn" data-count="1">+1 🍺</button>
-        <button class="add-btn" data-count="2">+2 🍺</button>
-        <button class="add-btn" data-count="3">+3 🍺</button>
-        <button class="add-btn" data-count="5">+5 🍻</button>
+    <!-- ===== USTAWIENIA ===== -->
+    <div class="tab-content" id="settings">
+      <div class="settings-section">
+        <h3>💰 Koszty</h3>
+        <div class="setting-row">
+          <label>Cena za piwo (zł)</label>
+          <input type="number" id="settingPrice" min="1" max="50" step="0.5">
+        </div>
+        <div class="setting-row">
+          <label>Pojemność (ml)</label>
+          <input type="number" id="settingMl" min="100" max="1000" step="50">
+        </div>
+        <div class="setting-row">
+          <label>Kalorie na piwo</label>
+          <input type="number" id="settingCalories" min="50" max="500">
+        </div>
       </div>
       
-      <div class="manual-add">
-        <h3>Lub wpisz ręcznie dla daty:</h3>
-        <input type="date" id="manualDate">
-        <input type="number" id="manualCount" min="0" max="99" placeholder="Ilość">
-        <button id="manualSave" class="save-btn">Zapisz</button>
+      <div class="settings-section">
+        <h3>⚠️ Limity</h3>
+        <div class="setting-row">
+          <label>Limit dzienny</label>
+          <input type="number" id="settingDailyLimit" min="1" max="20">
+        </div>
+        <div class="setting-row">
+          <label>Limit tygodniowy</label>
+          <input type="number" id="settingWeeklyLimit" min="1" max="100">
+        </div>
+        <div class="setting-row">
+          <label>Powiadomienia o limicie</label>
+          <input type="checkbox" id="settingAlerts">
+        </div>
       </div>
       
-      <div class="actions">
+      <button id="saveSettings" class="save-settings-btn">💾 Zapisz ustawienia</button>
+      
+      <div class="settings-section danger-zone">
+        <h3>🗑️ Dane</h3>
         <button id="exportCSV" class="action-btn">📊 Eksport CSV</button>
-        <button id="resetToday" class="action-btn danger">🗑️ Resetuj dziś</button>
+        <button id="clearAll" class="action-btn danger">🗑️ Usuń wszystkie dane</button>
       </div>
     </div>
     
