@@ -1,75 +1,110 @@
-let currentMonth = new Date().getMonth();
-let currentYear = new Date().getFullYear();
-let beerHistory = {};
-let settings = {};
-let charts = {};
+var currentMonth = new Date().getMonth();
+var currentYear = new Date().getFullYear();
+var beerHistory = {};
+var settings = {};
+var achievements = {};
 
-document.addEventListener('DOMContentLoaded', () => {
+var ACHIEVEMENTS_DATA = {
+  firstBeer: { icon: '🌟', name: 'Pierwszy wpis', desc: 'Zapisz pierwsze dane' },
+  soberWeek: { icon: '🚗', name: 'Trzeźwy tydzień', desc: '7 dni bez alkoholu' },
+  moderation: { icon: '🧘', name: 'Umiar', desc: 'Max 2 piwa/dzień przez tydzień' },
+  streak30: { icon: '📅', name: 'Miesiąc', desc: '30 dni zapisywania z rzędu' },
+  century: { icon: '💯', name: 'Weteran', desc: '100 dni w aplikacji' }
+};
+
+var FUN_COMPARISONS = [
+  { icon: '🍕', name: 'pizz', divisor: 35 },
+  { icon: '🍔', name: 'kebabów', divisor: 25 },
+  { icon: '☕', name: 'kaw', divisor: 15 },
+  { icon: '🎬', name: 'biletów do kina', divisor: 30 },
+  { icon: '🏃', name: 'km biegu (kalorie)', divisor: 70 },
+  { icon: '🍫', name: 'czekolad', divisor: 8 }
+];
+
+var BAC_TIPS = [
+  'Limit promili dla kierowców w Polsce to 0.2‰. Po przekroczeniu 0.5‰ grozi kara do 2 lat więzienia.',
+  'Wątroba metabolizuje około 0.1-0.15‰ alkoholu na godzinę.',
+  'Kobieta tej samej wagi co mężczyzna będzie miała wyższy poziom alkoholu we krwi.',
+  'Jedzenie przed piciem spowalnia wchłanianie alkoholu, ale nie zmniejsza jego ilości.',
+  'Kac to głównie skutek odwodnienia. Pij wodę między piwami!',
+  'Jedno piwo 0.5L 5% = około 20g czystego alkoholu.',
+  'Alkohol zaburza fazę REM snu, przez co czujesz się zmęczony następnego dnia.',
+  'Piwo bezalkoholowe może zawierać do 0.5% alkoholu.',
+  'Średnio organizm spala 7-10g alkoholu na godzinę.',
+  'Po 3 piwach 0.5L czas reakcji kierowcy wydłuża się o 25%.'
+];
+
+document.addEventListener('DOMContentLoaded', function() {
   loadData();
   setupTabs();
-  setupEventListeners();
+  setupEvents();
 });
 
 function setupTabs() {
-  document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  var tabs = document.querySelectorAll('.tab');
+  for (var i = 0; i < tabs.length; i++) {
+    tabs[i].addEventListener('click', function() {
+      var tabId = this.dataset.tab;
       
-      tab.classList.add('active');
-      document.getElementById(tab.dataset.tab).classList.add('active');
+      var allTabs = document.querySelectorAll('.tab');
+      for (var j = 0; j < allTabs.length; j++) {
+        allTabs[j].classList.remove('active');
+      }
       
-      if (tab.dataset.tab === 'calendar') {
-        renderCalendar();
+      var allContents = document.querySelectorAll('.tab-content');
+      for (var j = 0; j < allContents.length; j++) {
+        allContents[j].classList.remove('active');
       }
-      if (tab.dataset.tab === 'charts') {
-        setTimeout(renderCharts, 100);
-      }
-      if (tab.dataset.tab === 'settings') {
-        loadSettingsForm();
-      }
+      
+      this.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+      
+      if (tabId === 'charts') renderAllCharts();
+      if (tabId === 'calendar') renderCalendar();
+      if (tabId === 'settings') loadSettingsForm();
+      if (tabId === 'bac') loadBacSettings();
     });
-  });
+  }
 }
 
-function setupEventListeners() {
+function setupEvents() {
   // Dodawanie piw
-  document.querySelectorAll('.add-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const count = parseInt(btn.dataset.count);
-      chrome.runtime.sendMessage({ action: "addBeers", count: count }, () => {
+  var addBtns = document.querySelectorAll('.add-btn');
+  for (var i = 0; i < addBtns.length; i++) {
+    addBtns[i].addEventListener('click', function() {
+      var count = parseInt(this.dataset.count);
+      chrome.runtime.sendMessage({ action: "addBeers", count: count }, function() {
         loadData();
-        showToast(`Dodano ${count} 🍺`);
+        showToast('Dodano ' + count + ' 🍺');
       });
     });
-  });
+  }
   
   // Ręczne dodawanie
   document.getElementById('manualDate').valueAsDate = new Date();
-  document.getElementById('manualSave').addEventListener('click', () => {
-    const date = document.getElementById('manualDate').value;
-    const count = parseInt(document.getElementById('manualCount').value) || 0;
-    
+  document.getElementById('manualSave').addEventListener('click', function() {
+    var date = document.getElementById('manualDate').value;
+    var count = parseInt(document.getElementById('manualCount').value) || 0;
     if (date) {
       chrome.runtime.sendMessage({ 
         action: "setBeersForDate", 
         date: date, 
         count: count 
-      }, () => {
+      }, function() {
         loadData();
-        showToast(`Zapisano ${count} 🍺`);
+        showToast('Zapisano!');
       });
     }
   });
   
-  // Nawigacja kalendarza
-  document.getElementById('prevMonth').addEventListener('click', () => {
+  // Kalendarz nawigacja
+  document.getElementById('prevMonth').addEventListener('click', function() {
     currentMonth--;
     if (currentMonth < 0) { currentMonth = 11; currentYear--; }
     renderCalendar();
   });
   
-  document.getElementById('nextMonth').addEventListener('click', () => {
+  document.getElementById('nextMonth').addEventListener('click', function() {
     currentMonth++;
     if (currentMonth > 11) { currentMonth = 0; currentYear++; }
     renderCalendar();
@@ -77,164 +112,603 @@ function setupEventListeners() {
   
   // Ustawienia
   document.getElementById('saveSettings').addEventListener('click', saveSettings);
-  
-  // Eksport
   document.getElementById('exportCSV').addEventListener('click', exportToCSV);
   
-  // Usuń dane
-  document.getElementById('clearAll').addEventListener('click', () => {
-    if (confirm('NA PEWNO usunąć WSZYSTKIE dane? Tej operacji nie można cofnąć!')) {
-      chrome.runtime.sendMessage({ action: "clearAllData" }, () => {
+  // Reset osiągnięć
+  document.getElementById('resetAchievements').addEventListener('click', function() {
+    if (confirm('Zresetować wszystkie osiągnięcia?')) {
+      achievements = {
+        firstBeer: false,
+        soberWeek: false,
+        moderation: false,
+        streak30: false,
+        century: false
+      };
+      chrome.runtime.sendMessage({ action: "saveAchievements", achievements: achievements }, function() {
+        loadData();
+        showToast('Osiągnięcia zresetowane');
+      });
+    }
+  });
+  
+  // Usuń wszystko
+  document.getElementById('clearAll').addEventListener('click', function() {
+    if (confirm('NA PEWNO usunąć WSZYSTKIE dane?')) {
+      chrome.runtime.sendMessage({ action: "clearAllData" }, function() {
         loadData();
         showToast('Dane usunięte');
       });
     }
   });
+  
+  // Kalkulator promili
+  document.getElementById('calcBac').addEventListener('click', calculateBAC);
+  
+  // Presety % alkoholu
+  var presetBtns = document.querySelectorAll('.bac-preset');
+  for (var i = 0; i < presetBtns.length; i++) {
+    presetBtns[i].addEventListener('click', function() {
+      document.getElementById('bacPercent').value = this.dataset.percent;
+      
+      var allBtns = document.querySelectorAll('.bac-preset');
+      for (var j = 0; j < allBtns.length; j++) {
+        allBtns[j].classList.remove('active');
+      }
+      this.classList.add('active');
+      
+      calculateBAC();
+    });
+  }
+  
+  // Auto-oblicz przy zmianie wartości
+  var bacInputs = document.querySelectorAll('#bacWeight, #bacGender, #bacBeers, #bacMl, #bacPercent, #bacHours');
+  for (var i = 0; i < bacInputs.length; i++) {
+    bacInputs[i].addEventListener('change', calculateBAC);
+    bacInputs[i].addEventListener('input', calculateBAC);
+  }
 }
 
 function loadData() {
-  chrome.runtime.sendMessage({ action: "getSettings" }, (s) => {
-    settings = s;
+  chrome.runtime.sendMessage({ action: "getSettings" }, function(s) {
+    settings = s || {};
     
-    chrome.runtime.sendMessage({ action: "getBeerData" }, (history) => {
-      beerHistory = history || {};
-      updateStats();
-      renderCalendar();
+    chrome.runtime.sendMessage({ action: "getAchievements" }, function(a) {
+      achievements = a || {};
+      
+      chrome.runtime.sendMessage({ action: "getBeerData" }, function(history) {
+        beerHistory = history || {};
+        updateStats();
+        updateWeeklyGoal();
+        updateAchievements();
+        updateComparison();
+        renderCalendar();
+      });
     });
   });
 }
 
 function updateStats() {
-  const today = new Date();
-  const todayStr = today.toISOString().split('T')[0];
+  var today = new Date();
+  var todayStr = today.toISOString().split('T')[0];
   
-  const yesterday = new Date(today);
+  var yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = yesterday.toISOString().split('T')[0];
+  var yesterdayStr = yesterday.toISOString().split('T')[0];
   
-  // Dzisiaj
-  const todayCount = beerHistory[todayStr] || 0;
+  var todayCount = beerHistory[todayStr] || 0;
   document.getElementById('todayCount').textContent = todayCount;
-  
-  // Wczoraj
   document.getElementById('yesterdayCount').textContent = beerHistory[yesterdayStr] || 0;
   
-  // Ten tydzień
-  let weekCount = 0;
-  for (let i = 0; i < 7; i++) {
-    const date = new Date(today);
+  var weekCount = 0;
+  for (var i = 0; i < 7; i++) {
+    var date = new Date(today);
     date.setDate(date.getDate() - i);
-    const dateStr = date.toISOString().split('T')[0];
+    var dateStr = date.toISOString().split('T')[0];
     weekCount += beerHistory[dateStr] || 0;
   }
   document.getElementById('weekCount').textContent = weekCount;
   document.getElementById('avgWeek').textContent = (weekCount / 7).toFixed(1);
   
-  // Ten miesiąc
-  let monthCount = 0;
-  for (const [date, count] of Object.entries(beerHistory)) {
-    const d = new Date(date);
+  var monthCount = 0;
+  for (var dateKey in beerHistory) {
+    var d = new Date(dateKey);
     if (d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear()) {
-      monthCount += count;
+      monthCount += beerHistory[dateKey];
     }
   }
   document.getElementById('monthCount').textContent = monthCount;
   
-  // Ten rok
-  let yearCount = 0;
-  for (const [date, count] of Object.entries(beerHistory)) {
-    const d = new Date(date);
+  var yearCount = 0;
+  for (var dateKey in beerHistory) {
+    var d = new Date(dateKey);
     if (d.getFullYear() === today.getFullYear()) {
-      yearCount += count;
+      yearCount += beerHistory[dateKey];
     }
   }
   document.getElementById('yearCount').textContent = yearCount;
   
-  // Łącznie
-  let totalCount = 0;
-  for (const count of Object.values(beerHistory)) {
-    totalCount += count;
+  var totalCount = 0;
+  for (var dateKey in beerHistory) {
+    totalCount += beerHistory[dateKey];
   }
   document.getElementById('totalCount').textContent = totalCount;
   
-  // KOSZTY
-  const price = settings.beerPrice || 8;
-  const calories = settings.beerCalories || 150;
+  var price = settings.beerPrice || 8;
+  var calories = settings.beerCalories || 150;
   
-  document.getElementById('weekCost').textContent = `${weekCount * price} zł`;
-  document.getElementById('monthCost').textContent = `${monthCount * price} zł`;
-  document.getElementById('yearCost').textContent = `${yearCount * price} zł`;
-  document.getElementById('monthCalories').textContent = `${monthCount * calories} kcal`;
+  document.getElementById('weekCost').textContent = (weekCount * price) + ' zł';
+  document.getElementById('monthCost').textContent = (monthCount * price) + ' zł';
+  document.getElementById('yearCost').textContent = (yearCount * price) + ' zł';
+  document.getElementById('monthCalories').textContent = (monthCount * calories) + ' kcal';
   
-  // Ciekawe statystyki
-  updateFunStats(monthCount, yearCount, price, calories);
-  
-  // Streak
+  updateFunStats(yearCount, price, calories);
   updateStreak(today);
 }
 
-function updateFunStats(monthCount, yearCount, price, calories) {
-  const funStat1 = document.getElementById('funStat1');
-  const funStat2 = document.getElementById('funStat2');
+function updateFunStats(yearCount, price, calories) {
+  var yearMoney = yearCount * price;
+  var yearCalories = yearCount * calories;
   
-  // Litry
-  const ml = settings.beerMl || 500;
-  const yearLiters = (yearCount * ml / 1000).toFixed(1);
-  funStat1.innerHTML = `🍺 W tym roku: <strong>${yearLiters}L</strong> piwa`;
+  var html = '';
+  var randomComparisons = FUN_COMPARISONS.sort(function() { return 0.5 - Math.random(); }).slice(0, 3);
   
-  // Co można kupić za te pieniądze
-  const yearMoney = yearCount * price;
-  let comparison = '';
-  if (yearMoney >= 5000) {
-    comparison = `💻 Laptop za ${yearMoney} zł`;
-  } else if (yearMoney >= 2000) {
-    comparison = `📱 Telefon za ${yearMoney} zł`;
-  } else if (yearMoney >= 500) {
-    comparison = `👟 Buty za ${yearMoney} zł`;
-  } else if (yearMoney >= 100) {
-    comparison = `🍕 ${Math.floor(yearMoney / 40)} pizz`;
-  } else {
-    comparison = `☕ ${Math.floor(yearMoney / 15)} kaw`;
+  for (var i = 0; i < randomComparisons.length; i++) {
+    var comp = randomComparisons[i];
+    var value;
+    
+    if (comp.name === 'km biegu (kalorie)') {
+      value = Math.floor(yearCalories / comp.divisor);
+    } else {
+      value = Math.floor(yearMoney / comp.divisor);
+    }
+    
+    html += '<div class="fun-stat-item">';
+    html += '<span>' + comp.icon + '</span>';
+    html += '<span>Za te pieniądze kupisz <strong>' + value + '</strong> ' + comp.name + '</span>';
+    html += '</div>';
   }
-  funStat2.innerHTML = `💸 Mogłeś kupić: <strong>${comparison}</strong>`;
+  
+  var ml = settings.beerMl || 500;
+  var liters = (yearCount * ml / 1000).toFixed(1);
+  html += '<div class="fun-stat-item">';
+  html += '<span>🍺</span>';
+  html += '<span>W tym roku wypiłeś <strong>' + liters + 'L</strong> piwa</span>';
+  html += '</div>';
+  
+  document.getElementById('funStats').innerHTML = html;
 }
 
 function updateStreak(today) {
-  let soberDays = 0;
-  let drinkingDays = 0;
+  var soberDays = 0;
+  var drinkingDays = 0;
   
-  for (let i = 1; i <= 365; i++) {
-    const date = new Date(today);
+  for (var i = 1; i <= 365; i++) {
+    var date = new Date(today);
     date.setDate(date.getDate() - i);
-    const dateStr = date.toISOString().split('T')[0];
-    const count = beerHistory[dateStr] || 0;
-    
-    if (count === 0) soberDays++;
-    else break;
+    var dateStr = date.toISOString().split('T')[0];
+    if (beerHistory.hasOwnProperty(dateStr) && beerHistory[dateStr] === 0) {
+      soberDays++;
+    } else {
+      break;
+    }
   }
   
-  for (let i = 1; i <= 365; i++) {
-    const date = new Date(today);
+  for (var i = 1; i <= 365; i++) {
+    var date = new Date(today);
     date.setDate(date.getDate() - i);
-    const dateStr = date.toISOString().split('T')[0];
-    const count = beerHistory[dateStr] || 0;
-    
+    var dateStr = date.toISOString().split('T')[0];
+    var count = beerHistory[dateStr] || 0;
     if (count > 0) drinkingDays++;
     else break;
   }
   
-  const streakInfo = document.getElementById('streakInfo');
+  var streakInfo = document.getElementById('streakInfo');
   if (soberDays > 0) {
-    streakInfo.innerHTML = `<span class="streak-good">🌟 ${soberDays} dni bez alkoholu!</span>`;
+    streakInfo.innerHTML = '<span class="streak-good">🌟 ' + soberDays + ' dni bez alkoholu!</span>';
   } else if (drinkingDays > 3) {
-    streakInfo.innerHTML = `<span class="streak-bad">⚠️ ${drinkingDays} dni z rzędu z piwem</span>`;
+    streakInfo.innerHTML = '<span class="streak-bad">⚠️ ' + drinkingDays + ' dni z rzędu z piwem</span>';
   } else {
     streakInfo.innerHTML = '';
   }
 }
 
-// ===== WYKRESY =====
-function renderCharts() {
+function updateWeeklyGoal() {
+  var goal = settings.weeklyGoal || 10;
+  var today = new Date();
+  var dayOfWeek = today.getDay();
+  if (dayOfWeek === 0) dayOfWeek = 7;
+  
+  var weekStart = new Date(today);
+  weekStart.setDate(today.getDate() - dayOfWeek + 1);
+  
+  var weekData = [];
+  var weekTotal = 0;
+  var daysNames = ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So', 'Nd'];
+  
+  for (var i = 0; i < 7; i++) {
+    var date = new Date(weekStart);
+    date.setDate(weekStart.getDate() + i);
+    var dateStr = date.toISOString().split('T')[0];
+    var count = beerHistory[dateStr] || 0;
+    var isPast = date <= today;
+    var isToday = dateStr === today.toISOString().split('T')[0];
+    
+    weekData.push({
+      name: daysNames[i],
+      count: count,
+      isPast: isPast,
+      isToday: isToday
+    });
+    
+    if (isPast) weekTotal += count;
+  }
+  
+  document.getElementById('goalDisplay').textContent = weekTotal + '/' + goal;
+  
+  var percent = Math.min((weekTotal / goal) * 100, 100);
+  var progressEl = document.getElementById('goalProgress');
+  progressEl.style.width = percent + '%';
+  progressEl.textContent = Math.round(percent) + '%';
+  
+  progressEl.classList.remove('safe', 'warning', 'danger');
+  if (percent < 70) {
+    progressEl.classList.add('safe');
+  } else if (percent < 100) {
+    progressEl.classList.add('warning');
+  } else {
+    progressEl.classList.add('danger');
+  }
+  
+  var daysHtml = '';
+  for (var i = 0; i < weekData.length; i++) {
+    var day = weekData[i];
+    var valueClass = day.isPast ? 'filled' : 'empty';
+    if (day.isToday) valueClass += ' today';
+    
+    daysHtml += '<div class="week-day">';
+    daysHtml += '<div class="week-day-name">' + day.name + '</div>';
+    daysHtml += '<div class="week-day-value ' + valueClass + '">' + (day.isPast ? day.count : '·') + '</div>';
+    daysHtml += '</div>';
+  }
+  document.getElementById('weeklyDays').innerHTML = daysHtml;
+  
+  var tipEl = document.getElementById('goalTip');
+  var remaining = goal - weekTotal;
+  
+  if (weekTotal >= goal) {
+    tipEl.textContent = '⚠️ Przekroczyłeś cel tygodniowy!';
+    tipEl.className = 'goal-tip danger';
+  } else if (remaining <= 2) {
+    tipEl.textContent = '⚠️ Zostało tylko ' + remaining + ' piw do limitu!';
+    tipEl.className = 'goal-tip warning';
+  } else {
+    tipEl.textContent = '💡 Zostało ' + remaining + ' piw - świetnie ci idzie!';
+    tipEl.className = 'goal-tip';
+  }
+}
+
+function updateAchievements() {
+  var today = new Date();
+  var newAchievements = [];
+  
+  var totalDays = Object.keys(beerHistory).length;
+  if (totalDays > 0 && !achievements.firstBeer) {
+    achievements.firstBeer = true;
+    newAchievements.push('firstBeer');
+  }
+  
+  var soberStreak = 0;
+  for (var i = 1; i <= 7; i++) {
+    var date = new Date(today);
+    date.setDate(date.getDate() - i);
+    var dateStr = date.toISOString().split('T')[0];
+    
+    if (beerHistory.hasOwnProperty(dateStr)) {
+      if (beerHistory[dateStr] === 0) {
+        soberStreak++;
+      } else {
+        break;
+      }
+    } else {
+      break;
+    }
+  }
+  if (soberStreak >= 7 && !achievements.soberWeek) {
+    achievements.soberWeek = true;
+    newAchievements.push('soberWeek');
+  }
+  
+  var moderateDays = 0;
+  for (var i = 1; i <= 7; i++) {
+    var date = new Date(today);
+    date.setDate(date.getDate() - i);
+    var dateStr = date.toISOString().split('T')[0];
+    
+    if (beerHistory.hasOwnProperty(dateStr)) {
+      if (beerHistory[dateStr] <= 2) {
+        moderateDays++;
+      } else {
+        break;
+      }
+    } else {
+      break;
+    }
+  }
+  if (moderateDays >= 7 && !achievements.moderation) {
+    achievements.moderation = true;
+    newAchievements.push('moderation');
+  }
+  
+  if (totalDays >= 30 && !achievements.streak30) {
+    achievements.streak30 = true;
+    newAchievements.push('streak30');
+  }
+  
+  if (totalDays >= 100 && !achievements.century) {
+    achievements.century = true;
+    newAchievements.push('century');
+  }
+  
+  if (newAchievements.length > 0) {
+    chrome.runtime.sendMessage({ action: "saveAchievements", achievements: achievements });
+    
+    for (var i = 0; i < newAchievements.length; i++) {
+      showAchievementToast(newAchievements[i]);
+    }
+  }
+  
+  renderAchievementsGrid();
+}
+
+function renderAchievementsGrid() {
+  var html = '';
+  var unlockedCount = 0;
+  var lastUnlocked = null;
+  
+  for (var key in ACHIEVEMENTS_DATA) {
+    var data = ACHIEVEMENTS_DATA[key];
+    var isUnlocked = achievements[key];
+    
+    if (isUnlocked) {
+      unlockedCount++;
+      lastUnlocked = key;
+    }
+    
+    html += '<div class="achievement ' + (isUnlocked ? 'unlocked' : 'locked') + '" data-key="' + key + '">';
+    html += '<div class="achievement-icon">' + (isUnlocked ? data.icon : '🔒') + '</div>';
+    html += '<div class="achievement-name">' + data.name + '</div>';
+    html += '</div>';
+  }
+  
+  document.getElementById('achievementsGrid').innerHTML = html;
+  document.getElementById('achievementsCount').textContent = unlockedCount + '/5';
+  
+  if (lastUnlocked) {
+    document.getElementById('lastAchievement').innerHTML = 
+      '🎉 Ostatnie: ' + ACHIEVEMENTS_DATA[lastUnlocked].name;
+  } else {
+    document.getElementById('lastAchievement').innerHTML = '';
+  }
+}
+
+function showAchievementToast(key) {
+  var data = ACHIEVEMENTS_DATA[key];
+  
+  var toast = document.createElement('div');
+  toast.className = 'achievement-toast';
+  toast.innerHTML = 
+    '<span class="achievement-toast-icon">' + data.icon + '</span>' +
+    '<div class="achievement-toast-title">Nowe osiągnięcie!</div>' +
+    '<div class="achievement-toast-desc">' + data.name + '</div>';
+  
+  document.body.appendChild(toast);
+  
+  setTimeout(function() { toast.classList.add('show'); }, 10);
+  setTimeout(function() {
+    toast.classList.remove('show');
+    setTimeout(function() { toast.remove(); }, 500);
+  }, 3000);
+}
+
+function updateComparison() {
+  var today = new Date();
+  var thisMonth = today.getMonth();
+  var thisYear = today.getFullYear();
+  var prevMonth = thisMonth - 1;
+  var prevYear = thisYear;
+  if (prevMonth < 0) { prevMonth = 11; prevYear--; }
+  
+  var thisMonthBeers = 0;
+  var thisMonthSober = 0;
+  var prevMonthBeers = 0;
+  var prevMonthSober = 0;
+  
+  var daysInThisMonth = new Date(thisYear, thisMonth + 1, 0).getDate();
+  var daysInPrevMonth = new Date(prevYear, prevMonth + 1, 0).getDate();
+  
+  for (var day = 1; day <= daysInThisMonth; day++) {
+    var dateStr = thisYear + '-' + String(thisMonth + 1).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+    var count = beerHistory[dateStr] || 0;
+    thisMonthBeers += count;
+    if (count === 0) thisMonthSober++;
+  }
+  
+  for (var day = 1; day <= daysInPrevMonth; day++) {
+    var dateStr = prevYear + '-' + String(prevMonth + 1).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+    var count = beerHistory[dateStr] || 0;
+    prevMonthBeers += count;
+    if (count === 0) prevMonthSober++;
+  }
+  
+  var price = settings.beerPrice || 8;
+  
+  document.getElementById('compBeers').textContent = thisMonthBeers;
+  document.getElementById('compBeersPrev').textContent = prevMonthBeers;
+  setChangeClass('compBeersChange', thisMonthBeers, prevMonthBeers, true);
+  
+  document.getElementById('compCost').textContent = (thisMonthBeers * price) + ' zł';
+  document.getElementById('compCostPrev').textContent = (prevMonthBeers * price) + ' zł';
+  setChangeClass('compCostChange', thisMonthBeers * price, prevMonthBeers * price, true);
+  
+  document.getElementById('compSober').textContent = thisMonthSober;
+  document.getElementById('compSoberPrev').textContent = prevMonthSober;
+  setChangeClass('compSoberChange', thisMonthSober, prevMonthSober, false);
+}
+
+function setChangeClass(elementId, current, previous, lowerIsBetter) {
+  var el = document.getElementById(elementId);
+  var change = previous > 0 ? Math.round(((current - previous) / previous) * 100) : 0;
+  
+  var isPositive = lowerIsBetter ? (change < 0) : (change > 0);
+  
+  el.textContent = (change >= 0 ? '+' : '') + change + '%';
+  el.className = 'comparison-change ' + (isPositive ? 'positive' : 'negative');
+}
+
+// ========== KALKULATOR PROMILI ==========
+
+function calculateBAC() {
+  var weight = parseFloat(document.getElementById('bacWeight').value) || 80;
+  var gender = document.getElementById('bacGender').value;
+  var beers = parseFloat(document.getElementById('bacBeers').value) || 0;
+  var ml = parseFloat(document.getElementById('bacMl').value) || 500;
+  var percent = parseFloat(document.getElementById('bacPercent').value) || 5.0;
+  var hours = parseFloat(document.getElementById('bacHours').value) || 0;
+  
+  // 1. Całkowita objętość piwa w ml
+  var totalMl = beers * ml;
+  
+  // 2. Objętość czystego alkoholu w ml
+  var alcoholMl = totalMl * (percent / 100);
+  
+  // 3. Masa alkoholu w gramach (gęstość alkoholu = 0.789 g/ml)
+  var alcoholGrams = alcoholMl * 0.789;
+  
+  // 4. Współczynnik dystrybucji wody w organizmie
+  // Mężczyźni: 0.7, Kobiety: 0.6
+  var r = (gender === 'M') ? 0.7 : 0.6;
+  
+  // 5. Wzór Widmarka:
+  // C (promile) = A / (m × r)
+  // gdzie A = gramy alkoholu, m = masa ciała w kg, r = współczynnik
+  var bac = alcoholGrams / (weight * r);
+  
+  // 6. Metabolizm: średnio 0.15‰ na godzinę
+  var metabolized = hours * 0.15;
+  var bacAfterTime = Math.max(0, bac - metabolized);
+  
+  // Zaokrąglij do 2 miejsc
+  bac = Math.round(bac * 100) / 100;
+  bacAfterTime = Math.round(bacAfterTime * 100) / 100;
+  alcoholGrams = Math.round(alcoholGrams * 10) / 10;
+  
+  // Wyświetl wyniki
+  var bacEl = document.getElementById('bacValue');
+  var statusEl = document.getElementById('bacStatus');
+  var resultEl = document.getElementById('bacResult');
+  var gramsEl = document.getElementById('bacGrams');
+  
+  bacEl.textContent = bacAfterTime.toFixed(2) + ' ‰';
+  gramsEl.textContent = alcoholGrams + 'g';
+  
+  resultEl.classList.remove('safe', 'warning', 'danger');
+  
+  if (bacAfterTime < 0.2) {
+    resultEl.classList.add('safe');
+    statusEl.textContent = '✅ Trzeźwy - możesz jechać';
+  } else if (bacAfterTime < 0.5) {
+    resultEl.classList.add('warning');
+    statusEl.textContent = '⚠️ Stan po spożyciu - NIE JEDŹ!';
+  } else {
+    resultEl.classList.add('danger');
+    statusEl.textContent = '🚫 Stan nietrzeźwości - NIE JEDŹ!';
+  }
+  
+  // Czas do możliwości jazdy (poniżej 0.2‰)
+  var hoursToDrive = 0;
+  if (bacAfterTime >= 0.2) {
+    hoursToDrive = (bacAfterTime - 0.19) / 0.15;
+  }
+  
+  // Czas do pełnej trzeźwości
+  var hoursToSober = bacAfterTime / 0.15;
+  
+  // Formatuj czas jazdy
+  if (hoursToDrive > 0) {
+    var driveH = Math.floor(hoursToDrive);
+    var driveM = Math.round((hoursToDrive - driveH) * 60);
+    document.getElementById('bacDriveTime').textContent = driveH + 'h ' + driveM + 'min';
+  } else {
+    document.getElementById('bacDriveTime').textContent = 'Teraz ✓';
+  }
+  
+  // Oblicz godzinę trzeźwości
+  if (bacAfterTime > 0.01) {
+    var soberTime = new Date();
+    soberTime.setMinutes(soberTime.getMinutes() + Math.round(hoursToSober * 60));
+    document.getElementById('bacSoberTime').textContent = 
+      soberTime.getHours().toString().padStart(2, '0') + ':' + 
+      soberTime.getMinutes().toString().padStart(2, '0');
+  } else {
+    document.getElementById('bacSoberTime').textContent = 'Teraz ✓';
+  }
+  
+  // Szczegóły obliczeń
+  var breakdownHtml = '<div class="bac-breakdown-title">📊 Szczegóły obliczeń:</div>';
+  
+  breakdownHtml += '<div class="bac-breakdown-row">';
+  breakdownHtml += '<span>Wypite piwo:</span>';
+  breakdownHtml += '<span>' + beers + ' × ' + ml + 'ml = ' + totalMl + 'ml</span>';
+  breakdownHtml += '</div>';
+  
+  breakdownHtml += '<div class="bac-breakdown-row">';
+  breakdownHtml += '<span>Czysty alkohol (' + percent + '%):</span>';
+  breakdownHtml += '<span>' + alcoholMl.toFixed(1) + 'ml = ' + alcoholGrams + 'g</span>';
+  breakdownHtml += '</div>';
+  
+  breakdownHtml += '<div class="bac-breakdown-row">';
+  breakdownHtml += '<span>Promile (zaraz po wypiciu):</span>';
+  breakdownHtml += '<span>' + bac.toFixed(2) + '‰</span>';
+  breakdownHtml += '</div>';
+  
+  if (hours > 0) {
+    breakdownHtml += '<div class="bac-breakdown-row">';
+    breakdownHtml += '<span>Spalono przez ' + hours + 'h:</span>';
+    breakdownHtml += '<span>−' + metabolized.toFixed(2) + '‰</span>';
+    breakdownHtml += '</div>';
+  }
+  
+  breakdownHtml += '<div class="bac-breakdown-row highlight">';
+  breakdownHtml += '<span>Aktualne promile:</span>';
+  breakdownHtml += '<span>' + bacAfterTime.toFixed(2) + '‰</span>';
+  breakdownHtml += '</div>';
+  
+  document.getElementById('bacBreakdown').innerHTML = breakdownHtml;
+  
+  // Losowy tip
+  document.getElementById('bacTip').textContent = 
+    BAC_TIPS[Math.floor(Math.random() * BAC_TIPS.length)];
+}
+
+function loadBacSettings() {
+  document.getElementById('bacWeight').value = settings.weight || 80;
+  document.getElementById('bacGender').value = settings.gender || 'M';
+  document.getElementById('bacMl').value = settings.beerMl || 500;
+  
+  // Ustaw dzisiejszą liczbę piw jeśli są
+  var today = new Date().toISOString().split('T')[0];
+  var todayBeers = beerHistory[today] || 0;
+  if (todayBeers > 0) {
+    document.getElementById('bacBeers').value = todayBeers;
+  }
+  
+  // Oblicz od razu
+  calculateBAC();
+}
+
+// ========== WYKRESY ==========
+
+function renderAllCharts() {
   renderWeekChart();
   renderMonthChart();
   renderWeekdayChart();
@@ -243,203 +717,152 @@ function renderCharts() {
 }
 
 function renderWeekChart() {
-  const ctx = document.getElementById('weekChart').getContext('2d');
-  const labels = [];
-  const data = [];
-  const today = new Date();
+  var container = document.getElementById('weekChart');
+  var today = new Date();
+  var data = [];
+  var labels = [];
+  var maxVal = 1;
   
-  for (let i = 6; i >= 0; i--) {
-    const date = new Date(today);
+  for (var i = 6; i >= 0; i--) {
+    var date = new Date(today);
     date.setDate(date.getDate() - i);
-    const dateStr = date.toISOString().split('T')[0];
+    var dateStr = date.toISOString().split('T')[0];
+    var count = beerHistory[dateStr] || 0;
+    var dayName = date.toLocaleDateString('pl-PL', { weekday: 'short' });
     
-    labels.push(date.toLocaleDateString('pl-PL', { weekday: 'short', day: 'numeric' }));
-    data.push(beerHistory[dateStr] || 0);
+    labels.push(dayName);
+    data.push(count);
+    if (count > maxVal) maxVal = count;
   }
   
-  if (charts.week) charts.week.destroy();
-  
-  charts.week = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'Piwa',
-        data: data,
-        backgroundColor: data.map(v => {
-          if (v === 0) return 'rgba(74, 222, 128, 0.6)';
-          if (v <= 2) return 'rgba(250, 204, 21, 0.6)';
-          if (v <= 4) return 'rgba(251, 146, 60, 0.6)';
-          return 'rgba(239, 68, 68, 0.6)';
-        }),
-        borderRadius: 5
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { beginAtZero: true, ticks: { stepSize: 1, color: '#888' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-        x: { ticks: { color: '#888' }, grid: { display: false } }
-      }
-    }
-  });
+  var html = '';
+  for (var i = 0; i < data.length; i++) {
+    var height = Math.max((data[i] / maxVal) * 100, 5);
+    var colorClass = getBarColor(data[i]);
+    html += '<div class="bar-item">';
+    html += '<div class="bar-value">' + data[i] + '</div>';
+    html += '<div class="bar ' + colorClass + '" style="height:' + height + '%"></div>';
+    html += '<div class="bar-label">' + labels[i] + '</div>';
+    html += '</div>';
+  }
+  container.innerHTML = html;
 }
 
 function renderMonthChart() {
-  const ctx = document.getElementById('monthChart').getContext('2d');
-  const labels = [];
-  const data = [];
-  const today = new Date();
+  var container = document.getElementById('monthChart');
+  var today = new Date();
+  var data = [];
+  var maxVal = 1;
   
-  for (let i = 29; i >= 0; i--) {
-    const date = new Date(today);
+  for (var i = 29; i >= 0; i--) {
+    var date = new Date(today);
     date.setDate(date.getDate() - i);
-    const dateStr = date.toISOString().split('T')[0];
-    
-    labels.push(date.getDate());
-    data.push(beerHistory[dateStr] || 0);
+    var dateStr = date.toISOString().split('T')[0];
+    var count = beerHistory[dateStr] || 0;
+    data.push({ day: date.getDate(), count: count });
+    if (count > maxVal) maxVal = count;
   }
   
-  if (charts.month) charts.month.destroy();
-  
-  charts.month = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'Piwa',
-        data: data,
-        borderColor: '#ffa500',
-        backgroundColor: 'rgba(255, 165, 0, 0.1)',
-        fill: true,
-        tension: 0.3,
-        pointRadius: 3,
-        pointBackgroundColor: '#ffa500'
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { beginAtZero: true, ticks: { stepSize: 1, color: '#888' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-        x: { ticks: { color: '#888', maxTicksLimit: 10 }, grid: { display: false } }
-      }
-    }
-  });
+  var html = '<div class="line-bars">';
+  for (var i = 0; i < data.length; i++) {
+    var height = Math.max((data[i].count / maxVal) * 100, 2);
+    html += '<div class="line-bar" style="height:' + height + '%" title="' + data[i].day + ': ' + data[i].count + '"></div>';
+  }
+  html += '</div>';
+  html += '<div class="line-labels"><span>30 dni temu</span><span>Dziś</span></div>';
+  container.innerHTML = html;
 }
 
 function renderWeekdayChart() {
-  const ctx = document.getElementById('weekdayChart').getContext('2d');
-  const weekdays = ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So', 'Nd'];
-  const totals = [0, 0, 0, 0, 0, 0, 0];
-  const counts = [0, 0, 0, 0, 0, 0, 0];
+  var container = document.getElementById('weekdayChart');
+  var weekdays = ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So', 'Nd'];
+  var totals = [0, 0, 0, 0, 0, 0, 0];
+  var counts = [0, 0, 0, 0, 0, 0, 0];
   
-  for (const [dateStr, count] of Object.entries(beerHistory)) {
-    const date = new Date(dateStr);
-    let dayIndex = date.getDay() - 1;
+  for (var dateStr in beerHistory) {
+    var date = new Date(dateStr);
+    var dayIndex = date.getDay() - 1;
     if (dayIndex < 0) dayIndex = 6;
-    totals[dayIndex] += count;
+    totals[dayIndex] += beerHistory[dateStr];
     counts[dayIndex]++;
   }
   
-  const averages = totals.map((total, i) => counts[i] > 0 ? (total / counts[i]).toFixed(1) : 0);
+  var averages = [];
+  var maxVal = 1;
+  for (var i = 0; i < 7; i++) {
+    var avg = counts[i] > 0 ? (totals[i] / counts[i]) : 0;
+    averages.push(parseFloat(avg.toFixed(1)));
+    if (avg > maxVal) maxVal = avg;
+  }
   
-  if (charts.weekday) charts.weekday.destroy();
-  
-  charts.weekday = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: weekdays,
-      datasets: [{
-        label: 'Średnia',
-        data: averages,
-        backgroundColor: [
-          'rgba(100, 149, 237, 0.6)',
-          'rgba(100, 149, 237, 0.6)',
-          'rgba(100, 149, 237, 0.6)',
-          'rgba(100, 149, 237, 0.6)',
-          'rgba(255, 165, 0, 0.6)',
-          'rgba(239, 68, 68, 0.6)',
-          'rgba(239, 68, 68, 0.6)'
-        ],
-        borderRadius: 5
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { beginAtZero: true, ticks: { color: '#888' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-        x: { ticks: { color: '#888' }, grid: { display: false } }
-      }
-    }
-  });
+  var html = '';
+  for (var i = 0; i < 7; i++) {
+    var height = Math.max((averages[i] / maxVal) * 100, 5);
+    var colorClass = i >= 4 ? 'bar-weekend' : 'bar-weekday';
+    html += '<div class="bar-item">';
+    html += '<div class="bar-value">' + averages[i] + '</div>';
+    html += '<div class="bar ' + colorClass + '" style="height:' + height + '%"></div>';
+    html += '<div class="bar-label">' + weekdays[i] + '</div>';
+    html += '</div>';
+  }
+  container.innerHTML = html;
 }
 
 function renderCostChart() {
-  const ctx = document.getElementById('costChart').getContext('2d');
-  const labels = [];
-  const data = [];
-  const today = new Date();
-  const price = settings.beerPrice || 8;
+  var container = document.getElementById('costChart');
+  var today = new Date();
+  var price = settings.beerPrice || 8;
+  var data = [];
+  var labels = [];
+  var maxVal = 1;
   
-  // Ostatnie 6 miesięcy
-  for (let i = 5; i >= 0; i--) {
-    const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
-    const monthName = date.toLocaleDateString('pl-PL', { month: 'short' });
+  for (var i = 5; i >= 0; i--) {
+    var date = new Date(today.getFullYear(), today.getMonth() - i, 1);
+    var monthName = date.toLocaleDateString('pl-PL', { month: 'short' });
     labels.push(monthName);
     
-    let monthTotal = 0;
-    for (const [dateStr, count] of Object.entries(beerHistory)) {
-      const d = new Date(dateStr);
+    var monthTotal = 0;
+    for (var dateStr in beerHistory) {
+      var d = new Date(dateStr);
       if (d.getMonth() === date.getMonth() && d.getFullYear() === date.getFullYear()) {
-        monthTotal += count;
+        monthTotal += beerHistory[dateStr];
       }
     }
-    data.push(monthTotal * price);
+    var cost = monthTotal * price;
+    data.push(cost);
+    if (cost > maxVal) maxVal = cost;
   }
   
-  if (charts.cost) charts.cost.destroy();
-  
-  charts.cost = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'Koszt (zł)',
-        data: data,
-        backgroundColor: 'rgba(74, 222, 128, 0.6)',
-        borderRadius: 5
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { beginAtZero: true, ticks: { color: '#888', callback: v => v + ' zł' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-        x: { ticks: { color: '#888' }, grid: { display: false } }
-      }
-    }
-  });
+  var html = '';
+  for (var i = 0; i < data.length; i++) {
+    var height = Math.max((data[i] / maxVal) * 100, 5);
+    html += '<div class="bar-item">';
+    html += '<div class="bar-value">' + data[i] + '</div>';
+    html += '<div class="bar bar-cost" style="height:' + height + '%"></div>';
+    html += '<div class="bar-label">' + labels[i] + '</div>';
+    html += '</div>';
+  }
+  container.innerHTML = html;
+}
+
+function getBarColor(count) {
+  if (count === 0) return 'bar-green';
+  if (count <= 2) return 'bar-yellow';
+  if (count <= 4) return 'bar-orange';
+  return 'bar-red';
 }
 
 function updateChartStats() {
-  const today = new Date();
-  let maxDay = 0;
-  let sum30 = 0;
-  let daysWithBeer = 0;
+  var today = new Date();
+  var maxDay = 0;
+  var sum30 = 0;
+  var daysWithBeer = 0;
   
-  for (let i = 0; i < 30; i++) {
-    const date = new Date(today);
+  for (var i = 0; i < 30; i++) {
+    var date = new Date(today);
     date.setDate(date.getDate() - i);
-    const dateStr = date.toISOString().split('T')[0];
-    const count = beerHistory[dateStr] || 0;
-    
+    var dateStr = date.toISOString().split('T')[0];
+    var count = beerHistory[dateStr] || 0;
     if (count > maxDay) maxDay = count;
     sum30 += count;
     if (count > 0) daysWithBeer++;
@@ -450,144 +873,147 @@ function updateChartStats() {
   document.getElementById('drinkingDays').textContent = Math.round((daysWithBeer / 30) * 100) + '%';
 }
 
-// ===== KALENDARZ =====
+// ========== KALENDARZ ==========
+
 function renderCalendar() {
-  const monthLabel = document.getElementById('monthLabel');
-  const calendarDays = document.getElementById('calendarDays');
-  const monthSummary = document.getElementById('monthSummary');
+  var monthLabel = document.getElementById('monthLabel');
+  var calendarDays = document.getElementById('calendarDays');
+  var monthSummary = document.getElementById('monthSummary');
   
-  const monthNames = ['Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec',
-                      'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień'];
+  var monthNames = ['Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec',
+                    'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień'];
   
-  monthLabel.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+  monthLabel.textContent = monthNames[currentMonth] + ' ' + currentYear;
   
-  const firstDay = new Date(currentYear, currentMonth, 1);
-  let startDay = firstDay.getDay() - 1;
+  var firstDay = new Date(currentYear, currentMonth, 1);
+  var startDay = firstDay.getDay() - 1;
   if (startDay < 0) startDay = 6;
   
-  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  var daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
   
-  let html = '';
-  let monthTotal = 0;
-  let daysWithBeer = 0;
-  let monthCost = 0;
+  var html = '';
+  var monthTotal = 0;
+  var daysWithBeer = 0;
   
-  for (let i = 0; i < startDay; i++) {
-    html += '<div class="calendar-day empty"></div>';
+  for (var i = 0; i < startDay; i++) {
+    html += '<div class="cal-day empty"></div>';
   }
   
-  const todayStr = new Date().toISOString().split('T')[0];
-  const price = settings.beerPrice || 8;
+  var todayStr = new Date().toISOString().split('T')[0];
+  var price = settings.beerPrice || 8;
   
-  for (let day = 1; day <= daysInMonth; day++) {
-    const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    const count = beerHistory[dateStr] || 0;
+  for (var day = 1; day <= daysInMonth; day++) {
+    var mm = String(currentMonth + 1).padStart(2, '0');
+    var dd = String(day).padStart(2, '0');
+    var dateStr = currentYear + '-' + mm + '-' + dd;
+    var count = beerHistory[dateStr] || 0;
     
     monthTotal += count;
-    monthCost += count * price;
     if (count > 0) daysWithBeer++;
     
-    let levelClass = 'level-0';
-    if (count >= 1 && count <= 2) levelClass = 'level-1';
-    else if (count >= 3 && count <= 4) levelClass = 'level-2';
-    else if (count >= 5 && count <= 6) levelClass = 'level-3';
-    else if (count >= 7) levelClass = 'level-4';
+    var levelClass = 'l0';
+    if (count >= 1 && count <= 2) levelClass = 'l1';
+    else if (count >= 3 && count <= 4) levelClass = 'l2';
+    else if (count >= 5 && count <= 6) levelClass = 'l3';
+    else if (count >= 7) levelClass = 'l4';
     
-    const isToday = dateStr === todayStr ? 'today' : '';
+    var todayClass = dateStr === todayStr ? ' today' : '';
     
-    html += `
-      <div class="calendar-day ${levelClass} ${isToday}" title="${dateStr}: ${count} piw" data-date="${dateStr}">
-        <span class="day-number">${day}</span>
-        ${count > 0 ? `<span class="day-count">${count}</span>` : ''}
-      </div>
-    `;
+    html += '<div class="cal-day ' + levelClass + todayClass + '" data-date="' + dateStr + '" title="' + count + ' piw">';
+    html += '<span class="cal-num">' + day + '</span>';
+    if (count > 0) html += '<span class="cal-count">' + count + '</span>';
+    html += '</div>';
   }
   
   calendarDays.innerHTML = html;
   
-  // Kliknięcie na dzień - wypełnij formularz
-  calendarDays.querySelectorAll('.calendar-day:not(.empty)').forEach(dayEl => {
-    dayEl.addEventListener('click', () => {
-      const date = dayEl.dataset.date;
+  var calDays = calendarDays.querySelectorAll('.cal-day:not(.empty)');
+  for (var i = 0; i < calDays.length; i++) {
+    calDays[i].addEventListener('click', function() {
+      var date = this.dataset.date;
       document.getElementById('manualDate').value = date;
       document.getElementById('manualCount').value = beerHistory[date] || 0;
       document.getElementById('manualCount').focus();
     });
-  });
+  }
   
-  const avgPerDay = (monthTotal / daysInMonth).toFixed(1);
-  monthSummary.innerHTML = `
-    <p>🍺 Łącznie: <strong>${monthTotal}</strong> piw</p>
-    <p>📅 Dni z piwem: <strong>${daysWithBeer}</strong> / ${daysInMonth}</p>
-    <p>📊 Średnio: <strong>${avgPerDay}</strong> / dzień</p>
-    <p>💰 Koszt: <strong>${monthCost} zł</strong></p>
-  `;
+  var avg = (monthTotal / daysInMonth).toFixed(1);
+  monthSummary.innerHTML = 
+    '<p>🍺 Razem: <b>' + monthTotal + '</b> | ' +
+    '📅 Dni z piwem: <b>' + daysWithBeer + '</b>/' + daysInMonth + ' | ' +
+    '💰 <b>' + (monthTotal * price) + ' zł</b></p>';
 }
 
-// ===== USTAWIENIA =====
+// ========== USTAWIENIA ==========
+
 function loadSettingsForm() {
+  document.getElementById('settingWeeklyGoal').value = settings.weeklyGoal || 10;
   document.getElementById('settingPrice').value = settings.beerPrice || 8;
   document.getElementById('settingMl').value = settings.beerMl || 500;
   document.getElementById('settingCalories').value = settings.beerCalories || 150;
+  document.getElementById('settingWeight').value = settings.weight || 80;
+  document.getElementById('settingGender').value = settings.gender || 'M';
   document.getElementById('settingDailyLimit').value = settings.dailyLimit || 4;
   document.getElementById('settingWeeklyLimit').value = settings.weeklyLimit || 14;
-  document.getElementById('settingAlerts').checked = settings.alertsEnabled !== false;
 }
 
 function saveSettings() {
-  const newSettings = {
+  var newSettings = {
+    weeklyGoal: parseInt(document.getElementById('settingWeeklyGoal').value) || 10,
     beerPrice: parseFloat(document.getElementById('settingPrice').value) || 8,
     beerMl: parseInt(document.getElementById('settingMl').value) || 500,
     beerCalories: parseInt(document.getElementById('settingCalories').value) || 150,
+    weight: parseInt(document.getElementById('settingWeight').value) || 80,
+    gender: document.getElementById('settingGender').value || 'M',
     dailyLimit: parseInt(document.getElementById('settingDailyLimit').value) || 4,
-    weeklyLimit: parseInt(document.getElementById('settingWeeklyLimit').value) || 14,
-    alertsEnabled: document.getElementById('settingAlerts').checked
+    weeklyLimit: parseInt(document.getElementById('settingWeeklyLimit').value) || 14
   };
   
-  chrome.runtime.sendMessage({ action: "saveSettings", settings: newSettings }, () => {
+  chrome.runtime.sendMessage({ action: "saveSettings", settings: newSettings }, function() {
     settings = newSettings;
-    showToast('Ustawienia zapisane! ✓');
-    updateStats();
+    showToast('Zapisano! ✓');
+    loadData();
   });
 }
 
-// ===== EKSPORT =====
+// ========== EKSPORT CSV ==========
+
 function exportToCSV() {
-  const price = settings.beerPrice || 8;
-  const calories = settings.beerCalories || 150;
+  var price = settings.beerPrice || 8;
+  var calories = settings.beerCalories || 150;
   
-  let csv = 'Data,Piwa,Koszt (zł),Kalorie\n';
+  var csv = 'Data,Piwa,Koszt,Kalorie\n';
+  var dates = Object.keys(beerHistory).sort();
   
-  const sortedDates = Object.keys(beerHistory).sort();
-  
-  for (const date of sortedDates) {
-    const count = beerHistory[date];
-    csv += `${date},${count},${count * price},${count * calories}\n`;
+  for (var i = 0; i < dates.length; i++) {
+    var d = dates[i];
+    var c = beerHistory[d];
+    csv += d + ',' + c + ',' + (c * price) + ',' + (c * calories) + '\n';
   }
   
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
+  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  var url = URL.createObjectURL(blob);
+  var link = document.createElement('a');
   link.href = url;
-  link.download = `piwa_${new Date().toISOString().split('T')[0]}.csv`;
+  link.download = 'piwa_' + new Date().toISOString().split('T')[0] + '.csv';
   link.click();
-  
-  showToast('Eksportowano CSV! 📊');
+  showToast('Eksport CSV! 📊');
 }
 
-// ===== TOAST =====
-function showToast(message) {
-  const existing = document.querySelector('.toast');
-  if (existing) existing.remove();
+// ========== TOAST ==========
+
+function showToast(msg) {
+  var old = document.querySelector('.toast');
+  if (old) old.remove();
   
-  const toast = document.createElement('div');
+  var toast = document.createElement('div');
   toast.className = 'toast';
-  toast.textContent = message;
+  toast.textContent = msg;
   document.body.appendChild(toast);
   
-  setTimeout(() => toast.classList.add('show'), 10);
-  setTimeout(() => {
+  setTimeout(function() { toast.classList.add('show'); }, 10);
+  setTimeout(function() {
     toast.classList.remove('show');
-    setTimeout(() => toast.remove(), 300);
+    setTimeout(function() { toast.remove(); }, 300);
   }, 2000);
 }

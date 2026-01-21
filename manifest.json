@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Licznik Piw 🍺",
-  "version": "3.0",
-  "description": "Zlicza piwa z wykresami, kosztami i kaloriami",
+  "version": "4.0",
+  "description": "Zlicza piwa z wykresami, kosztami, promilami i osiągnięciami",
   "permissions": [
     "storage"
   ],

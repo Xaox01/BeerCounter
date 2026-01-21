@@ -4,26 +4,46 @@
   <meta charset="UTF-8">
   <title>Licznik Piw</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="popup-page">
   <div class="container">
-    <h1>🍺 Licznik Piw</h1>
+    <h1>🍺 Licznik Piw v4</h1>
     
-    <!-- Nawigacja -->
     <div class="tabs">
-      <button class="tab active" data-tab="stats">📊 Statystyki</button>
+      <button class="tab active" data-tab="stats">📊 Stats</button>
       <button class="tab" data-tab="charts">📈 Wykresy</button>
-      <button class="tab" data-tab="calendar">📅 Kalendarz</button>
-      <button class="tab" data-tab="settings">⚙️ Ustawienia</button>
+      <button class="tab" data-tab="bac">🚗 Promile</button>
+      <button class="tab" data-tab="calendar">📅</button>
+      <button class="tab" data-tab="settings">⚙️</button>
     </div>
     
-    <!-- ===== STATYSTYKI ===== -->
+    <!-- STATYSTYKI -->
     <div class="tab-content active" id="stats">
+      
       <div class="stats-card">
         <h2>Dzisiaj</h2>
         <p class="big-number" id="todayCount">0</p>
         <p class="label">piw</p>
+      </div>
+      
+      <!-- CEL TYGODNIOWY -->
+      <div class="weekly-goal">
+        <h3>🎯 Cel tygodniowy <span id="goalDisplay">0/10</span></h3>
+        <div class="progress-bar">
+          <div class="progress-fill safe" id="goalProgress" style="width: 0%"></div>
+        </div>
+        <div class="weekly-days" id="weeklyDays"></div>
+        <div class="goal-tip" id="goalTip">💡 Świetnie ci idzie!</div>
+      </div>
+      
+      <!-- OSIĄGNIĘCIA -->
+      <div class="achievements-section">
+        <div class="achievements-header">
+          <h3>🏆 Osiągnięcia</h3>
+          <span class="achievements-count" id="achievementsCount">0/5</span>
+        </div>
+        <div class="achievements-grid" id="achievementsGrid"></div>
+        <div class="last-achievement" id="lastAchievement"></div>
       </div>
       
       <div class="stats-grid">
@@ -33,19 +53,19 @@
         </div>
         <div class="stat-box">
           <p class="stat-number" id="weekCount">0</p>
-          <p class="stat-label">Ten tydzień</p>
+          <p class="stat-label">Tydzień</p>
         </div>
         <div class="stat-box">
           <p class="stat-number" id="monthCount">0</p>
-          <p class="stat-label">Ten miesiąc</p>
+          <p class="stat-label">Miesiąc</p>
         </div>
         <div class="stat-box">
           <p class="stat-number" id="yearCount">0</p>
-          <p class="stat-label">Ten rok</p>
+          <p class="stat-label">Rok</p>
         </div>
         <div class="stat-box">
           <p class="stat-number" id="avgWeek">0</p>
-          <p class="stat-label">Śr./dzień (7d)</p>
+          <p class="stat-label">Śr./dzień</p>
         </div>
         <div class="stat-box">
           <p class="stat-number" id="totalCount">0</p>
@@ -53,7 +73,39 @@
         </div>
       </div>
       
-      <!-- KOSZTY I KALORIE -->
+      <!-- PORÓWNANIE Z POPRZEDNIM MIESIĄCEM -->
+      <div class="comparison-section">
+        <h3>📊 Ten miesiąc vs poprzedni</h3>
+        <div class="comparison-row">
+          <span class="comparison-label">Piwa</span>
+          <div class="comparison-values">
+            <span class="comparison-current" id="compBeers">0</span>
+            <span class="comparison-vs">vs</span>
+            <span id="compBeersPrev">0</span>
+            <span class="comparison-change" id="compBeersChange">0%</span>
+          </div>
+        </div>
+        <div class="comparison-row">
+          <span class="comparison-label">Koszt</span>
+          <div class="comparison-values">
+            <span class="comparison-current" id="compCost">0 zł</span>
+            <span class="comparison-vs">vs</span>
+            <span id="compCostPrev">0 zł</span>
+            <span class="comparison-change" id="compCostChange">0%</span>
+          </div>
+        </div>
+        <div class="comparison-row">
+          <span class="comparison-label">Dni bez piwa</span>
+          <div class="comparison-values">
+            <span class="comparison-current" id="compSober">0</span>
+            <span class="comparison-vs">vs</span>
+            <span id="compSoberPrev">0</span>
+            <span class="comparison-change" id="compSoberChange">0%</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- KOSZTY -->
       <div class="costs-section">
         <h3>💰 Koszty i kalorie</h3>
         <div class="costs-grid">
@@ -61,41 +113,37 @@
             <span class="cost-icon">📅</span>
             <div class="cost-info">
               <p class="cost-value" id="weekCost">0 zł</p>
-              <p class="cost-label">Ten tydzień</p>
+              <p class="cost-label">Tydzień</p>
             </div>
           </div>
           <div class="cost-box">
             <span class="cost-icon">📆</span>
             <div class="cost-info">
               <p class="cost-value" id="monthCost">0 zł</p>
-              <p class="cost-label">Ten miesiąc</p>
+              <p class="cost-label">Miesiąc</p>
             </div>
           </div>
           <div class="cost-box">
             <span class="cost-icon">📊</span>
             <div class="cost-info">
               <p class="cost-value" id="yearCost">0 zł</p>
-              <p class="cost-label">Ten rok</p>
+              <p class="cost-label">Rok</p>
             </div>
           </div>
           <div class="cost-box">
             <span class="cost-icon">🔥</span>
             <div class="cost-info">
               <p class="cost-value" id="monthCalories">0 kcal</p>
-              <p class="cost-label">Kalorie (miesiąc)</p>
+              <p class="cost-label">Kalorie</p>
             </div>
           </div>
         </div>
         
-        <div class="fun-stats">
-          <p id="funStat1"></p>
-          <p id="funStat2"></p>
-        </div>
+        <div class="fun-stats" id="funStats"></div>
       </div>
       
       <div class="streak-info" id="streakInfo"></div>
       
-      <!-- Szybkie dodawanie -->
       <div class="quick-add">
         <h3>Dodaj piwo</h3>
         <div class="add-buttons">
@@ -106,36 +154,36 @@
       </div>
     </div>
     
-    <!-- ===== WYKRESY ===== -->
+    <!-- WYKRESY -->
     <div class="tab-content" id="charts">
-      <div class="chart-container">
-        <h3>Ostatnie 7 dni</h3>
-        <canvas id="weekChart"></canvas>
+      <div class="chart-box">
+        <h3>📊 Ostatnie 7 dni</h3>
+        <div class="chart-bars" id="weekChart"></div>
       </div>
       
-      <div class="chart-container">
-        <h3>Ostatnie 30 dni</h3>
-        <canvas id="monthChart"></canvas>
+      <div class="chart-box">
+        <h3>📈 Ostatnie 30 dni</h3>
+        <div class="chart-line" id="monthChart"></div>
       </div>
       
-      <div class="chart-container">
-        <h3>Dni tygodnia (średnia)</h3>
-        <canvas id="weekdayChart"></canvas>
+      <div class="chart-box">
+        <h3>📅 Dni tygodnia (średnia)</h3>
+        <div class="chart-bars" id="weekdayChart"></div>
       </div>
       
-      <div class="chart-container">
-        <h3>Koszty miesięczne</h3>
-        <canvas id="costChart"></canvas>
+      <div class="chart-box">
+        <h3>💰 Koszty (6 miesięcy)</h3>
+        <div class="chart-bars" id="costChart"></div>
       </div>
       
       <div class="chart-stats">
         <div class="chart-stat">
           <p class="chart-stat-value" id="maxDay">0</p>
-          <p class="chart-stat-label">Rekord dzienny</p>
+          <p class="chart-stat-label">Rekord</p>
         </div>
         <div class="chart-stat">
           <p class="chart-stat-value" id="avgMonth">0</p>
-          <p class="chart-stat-label">Średnia (30 dni)</p>
+          <p class="chart-stat-label">Średnia/30d</p>
         </div>
         <div class="chart-stat">
           <p class="chart-stat-value" id="drinkingDays">0%</p>
@@ -144,7 +192,82 @@
       </div>
     </div>
     
-    <!-- ===== KALENDARZ ===== -->
+    <!-- KALKULATOR PROMILI -->
+    <div class="tab-content" id="bac">
+      <div class="bac-section">
+        <h3>🚗 Kalkulator promili</h3>
+        
+        <div class="bac-inputs">
+          <div class="bac-input-group">
+            <label>Waga (kg)</label>
+            <input type="number" id="bacWeight" value="80" min="40" max="200">
+          </div>
+          <div class="bac-input-group">
+            <label>Płeć</label>
+            <select id="bacGender">
+              <option value="M">Mężczyzna</option>
+              <option value="K">Kobieta</option>
+            </select>
+          </div>
+          <div class="bac-input-group">
+            <label>Ile piw</label>
+            <input type="number" id="bacBeers" value="1" min="0" max="30" step="0.5">
+          </div>
+          <div class="bac-input-group">
+            <label>Pojemność (ml)</label>
+            <input type="number" id="bacMl" value="500" min="100" max="1000" step="50">
+          </div>
+          <div class="bac-input-group">
+            <label>% alkoholu</label>
+            <input type="number" id="bacPercent" value="5.0" min="0" max="15" step="0.1">
+          </div>
+          <div class="bac-input-group">
+            <label>Godzin temu</label>
+            <input type="number" id="bacHours" value="0" min="0" max="24" step="0.5">
+          </div>
+        </div>
+        
+        <div class="bac-presets">
+          <span class="bac-preset-label">Szybki wybór %:</span>
+          <button class="bac-preset" data-percent="4.0">Lager 4%</button>
+          <button class="bac-preset" data-percent="5.0">Piwo 5%</button>
+          <button class="bac-preset" data-percent="6.0">Mocne 6%</button>
+          <button class="bac-preset" data-percent="7.5">IPA 7.5%</button>
+          <button class="bac-preset" data-percent="9.0">Strong 9%</button>
+        </div>
+        
+        <button class="btn-save" id="calcBac">🧮 Oblicz promile</button>
+        
+        <div class="bac-result safe" id="bacResult">
+          <div class="bac-value" id="bacValue">0.00 ‰</div>
+          <div class="bac-status" id="bacStatus">Trzeźwy - możesz jechać</div>
+        </div>
+        
+        <div class="bac-info">
+          <div class="bac-info-item">
+            <div class="bac-info-label">Możesz jechać za</div>
+            <div class="bac-info-value" id="bacDriveTime">0h</div>
+          </div>
+          <div class="bac-info-item">
+            <div class="bac-info-label">Trzeźwy o</div>
+            <div class="bac-info-value" id="bacSoberTime">--:--</div>
+          </div>
+          <div class="bac-info-item">
+            <div class="bac-info-label">Gramy alkoholu</div>
+            <div class="bac-info-value" id="bacGrams">0g</div>
+          </div>
+        </div>
+        
+        <div class="bac-breakdown" id="bacBreakdown"></div>
+      </div>
+      
+      <div class="daily-tip">
+        <div class="daily-tip-header">💡 Czy wiesz, że...</div>
+        <div class="daily-tip-text" id="bacTip">Limit promili dla kierowców w Polsce to 0.2‰. Po przekroczeniu 0.5‰ grozi kara do 2 lat więzienia.</div>
+      </div>
+    </div>
+    
+    <!-- KALENDARZ -->
     <div class="tab-content" id="calendar">
       <div class="calendar-nav">
         <button id="prevMonth">◀</button>
@@ -152,41 +275,42 @@
         <button id="nextMonth">▶</button>
       </div>
       
-      <div class="calendar-grid">
-        <div class="day-header">Pn</div>
-        <div class="day-header">Wt</div>
-        <div class="day-header">Śr</div>
-        <div class="day-header">Cz</div>
-        <div class="day-header">Pt</div>
-        <div class="day-header">So</div>
-        <div class="day-header">Nd</div>
+      <div class="calendar-header">
+        <span>Pn</span><span>Wt</span><span>Śr</span><span>Cz</span><span>Pt</span><span>So</span><span>Nd</span>
       </div>
       <div class="calendar-days" id="calendarDays"></div>
       
       <div class="calendar-legend">
-        <span><i class="legend-dot level-0"></i> 0</span>
-        <span><i class="legend-dot level-1"></i> 1-2</span>
-        <span><i class="legend-dot level-2"></i> 3-4</span>
-        <span><i class="legend-dot level-3"></i> 5-6</span>
-        <span><i class="legend-dot level-4"></i> 7+</span>
+        <span><i class="dot l0"></i>0</span>
+        <span><i class="dot l1"></i>1-2</span>
+        <span><i class="dot l2"></i>3-4</span>
+        <span><i class="dot l3"></i>5-6</span>
+        <span><i class="dot l4"></i>7+</span>
       </div>
       
       <div class="month-summary" id="monthSummary"></div>
       
-      <!-- Ręczne dodawanie -->
       <div class="manual-add">
         <h3>Edytuj datę</h3>
-        <div class="manual-inputs">
+        <div class="manual-row">
           <input type="date" id="manualDate">
-          <input type="number" id="manualCount" min="0" max="99" placeholder="Ilość">
-          <button id="manualSave" class="save-btn">💾</button>
+          <input type="number" id="manualCount" min="0" max="99" placeholder="0">
+          <button id="manualSave">💾</button>
         </div>
       </div>
     </div>
     
-    <!-- ===== USTAWIENIA ===== -->
+    <!-- USTAWIENIA -->
     <div class="tab-content" id="settings">
-      <div class="settings-section">
+      <div class="settings-group">
+        <h3>🎯 Cel tygodniowy</h3>
+        <div class="setting-row">
+          <label>Max piw na tydzień</label>
+          <input type="number" id="settingWeeklyGoal" min="1" max="50">
+        </div>
+      </div>
+      
+      <div class="settings-group">
         <h3>💰 Koszty</h3>
         <div class="setting-row">
           <label>Cena za piwo (zł)</label>
@@ -202,7 +326,22 @@
         </div>
       </div>
       
-      <div class="settings-section">
+      <div class="settings-group">
+        <h3>🚗 Promile</h3>
+        <div class="setting-row">
+          <label>Twoja waga (kg)</label>
+          <input type="number" id="settingWeight" min="40" max="200">
+        </div>
+        <div class="setting-row">
+          <label>Płeć</label>
+          <select id="settingGender">
+            <option value="M">Mężczyzna</option>
+            <option value="K">Kobieta</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="settings-group">
         <h3>⚠️ Limity</h3>
         <div class="setting-row">
           <label>Limit dzienny</label>
@@ -212,21 +351,17 @@
           <label>Limit tygodniowy</label>
           <input type="number" id="settingWeeklyLimit" min="1" max="100">
         </div>
-        <div class="setting-row">
-          <label>Powiadomienia o limicie</label>
-          <input type="checkbox" id="settingAlerts">
-        </div>
       </div>
       
-      <button id="saveSettings" class="save-settings-btn">💾 Zapisz ustawienia</button>
+      <button id="saveSettings" class="btn-save">💾 Zapisz ustawienia</button>
       
-      <div class="settings-section danger-zone">
+      <div class="settings-group danger">
         <h3>🗑️ Dane</h3>
-        <button id="exportCSV" class="action-btn">📊 Eksport CSV</button>
-        <button id="clearAll" class="action-btn danger">🗑️ Usuń wszystkie dane</button>
+        <button id="exportCSV" class="btn-action">📊 Eksport CSV</button>
+        <button id="resetAchievements" class="btn-action">🏆 Resetuj osiągnięcia</button>
+        <button id="clearAll" class="btn-action btn-danger">🗑️ Usuń wszystko</button>
       </div>
     </div>
-    
   </div>
   
   <script src="popup.js"></script>
